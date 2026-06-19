@@ -1,1 +1,1 @@
-"""Pacote de avaliação do modelo."""
+"""Model evaluation package."""

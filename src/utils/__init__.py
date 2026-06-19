@@ -1,1 +1,1 @@
-"""Pacote de utilitários e configurações."""
+"""Utilities and configuration package."""

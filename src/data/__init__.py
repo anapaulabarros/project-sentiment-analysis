@@ -1,1 +1,1 @@
-"""Pacote de carregamento de dados."""
+"""Data loading and validation package."""
