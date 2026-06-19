@@ -1,1 +1,1 @@
-"""Pacote de pré-processamento textual."""
+"""Text preprocessing and label normalization package."""

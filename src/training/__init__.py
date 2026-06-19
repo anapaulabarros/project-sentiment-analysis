@@ -1,1 +1,1 @@
-"""Pacote de treinamento do modelo."""
+"""Training pipeline package."""

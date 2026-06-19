@@ -1,1 +1,1 @@
-"""Pacote de definição de modelos."""
+"""Model definition package."""
