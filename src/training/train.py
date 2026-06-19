@@ -1,6 +1,15 @@
 """Training pipeline: dataset splitting and model training orchestration."""
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
+
+from src.utils.config import (
+    TEXT_COLUMN,
+    LABEL_COLUMN,
+    TEST_SIZE,
+    RANDOM_SEED,
+)
+from src.models.model import train_model
 
 
 def split_dataset(
@@ -20,7 +29,9 @@ def split_dataset(
     Returns:
         Tuple of (x_train, x_test, y_train, y_test).
     """
-    pass
+    x = data[text_column]
+    y = data[label_column]
+    return train_test_split(x, y, test_size=test_size, random_state=RANDOM_SEED)
 
 
 def run_training(data: pd.DataFrame) -> object:
@@ -32,4 +43,10 @@ def run_training(data: pd.DataFrame) -> object:
     Returns:
         Trained classification model.
     """
-    pass
+    x_train, _x_test, y_train, _y_test = split_dataset(
+        data,
+        text_column=TEXT_COLUMN,
+        label_column=LABEL_COLUMN,
+        test_size=TEST_SIZE,
+    )
+    return train_model(x_train, y_train)

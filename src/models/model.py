@@ -3,6 +3,9 @@
 from typing import Sequence
 
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def build_model() -> object:
@@ -11,7 +14,10 @@ def build_model() -> object:
     Returns:
         Initialized classification model.
     """
-    pass
+    return Pipeline([
+        ("tfidf", TfidfVectorizer(max_features=10_000, ngram_range=(1, 2))),
+        ("clf", LogisticRegression(max_iter=1000, random_state=42)),
+    ])
 
 
 def train_model(x_train: Sequence, y_train: Sequence[int]) -> object:
@@ -24,7 +30,9 @@ def train_model(x_train: Sequence, y_train: Sequence[int]) -> object:
     Returns:
         Trained classification model.
     """
-    pass
+    model = build_model()
+    model.fit(x_train, y_train)
+    return model
 
 
 def predict(model: object, x: Sequence) -> np.ndarray:
@@ -37,4 +45,4 @@ def predict(model: object, x: Sequence) -> np.ndarray:
     Returns:
         Array of predicted labels (0 or 1).
     """
-    pass
+    return model.predict(x)
