@@ -6,6 +6,7 @@ import pickle
 
 import numpy as np
 import torch
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.models.model import SentimentMLP, load_model
 from src.preprocessing.transform import clean_text, normalize_features
@@ -40,7 +41,7 @@ def load_artifacts(
 def predict_single(
     text: str,
     model: SentimentMLP,
-    vectorizer,
+    vectorizer: TfidfVectorizer,
     device: torch.device,
 ) -> int:
     """Predict the sentiment of a single review text.
@@ -68,7 +69,7 @@ def predict_single(
 def predict_batch(
     texts: list[str],
     model: SentimentMLP,
-    vectorizer,
+    vectorizer: TfidfVectorizer,
     device: torch.device,
 ) -> np.ndarray:
     """Predict sentiment for a list of review texts.

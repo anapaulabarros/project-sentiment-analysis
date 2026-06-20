@@ -38,23 +38,38 @@ project-sentiment-analysis/
 ├── requirements.txt
 ├── data/
 │   ├── raw/                       # Original dataset (not versioned)
-│   └── processed/                 # Preprocessed data
+│   └── processed/                 # Preprocessed data (generated)
+├── docs/
+│   ├── requirements.md            # Functional and non-functional requirements
+│   ├── architecture.md            # System architecture and data flow
+│   └── vision.md                  # System vision document
+├── notebooks/
+│   ├── sentiment_analysis.ipynb   # Interactive pipeline walkthrough
+│   └── experiments.ipynb          # Hyperparameter comparison experiments
 ├── results/
-│   ├── metrics/                   # Evaluation metrics per experiment
-│   └── figures/                   # Plots and visualizations
-└── src/
-    ├── data/
-    │   └── loader.py              # Dataset loading and validation
-    ├── preprocessing/
-    │   └── transform.py           # Text cleaning and label normalization
-    ├── models/
-    │   └── model.py               # Model definition and prediction
-    ├── training/
-    │   └── train.py               # Dataset splitting and training
-    ├── evaluation/
-    │   └── metrics.py             # Evaluation metrics and reporting
-    └── utils/
-        └── config.py              # Global constants and parameters
+│   ├── metrics/                   # metrics.json (generated)
+│   ├── figures/                   # confusion_matrix.png, experiment_comparison.png (generated)
+│   └── models/                    # model.pt, vectorizer.pkl (generated)
+├── src/
+│   ├── data/
+│   │   └── loader.py              # Dataset loading, validation, NumPy inspection
+│   ├── preprocessing/
+│   │   └── transform.py           # Text cleaning, label normalization, TF-IDF + NumPy
+│   ├── models/
+│   │   └── model.py               # SentimentMLP (PyTorch nn.Module), save/load
+│   ├── training/
+│   │   └── train.py               # Split, tensors, DataLoader, train/val loops
+│   ├── evaluation/
+│   │   └── metrics.py             # Accuracy, F1, Precision, Recall
+│   ├── inference/
+│   │   └── predict.py             # Single and batch inference
+│   └── utils/
+│       └── config.py              # Global constants and hyperparameters
+└── tests/
+    ├── test_data.py
+    ├── test_preprocessing.py
+    ├── test_model.py
+    └── test_training.py
 ```
 
 ## Installation
@@ -82,30 +97,87 @@ python main.py
 ## NLP Pipeline
 
 ```
-Raw text
-    │
-    ▼
-clean_text()           # lowercase, remove punctuation, collapse spaces
-    │
-    ▼
-normalize_label()      # rating → 0/1 (discard neutral)
-    │
-    ▼
-Feature extraction     # numerical text representation
-    │
-    ▼
-Classification model   # binary classifier
-    │
-    ▼
+data/raw/reviews.csv
+        │
+        ▼
+load_data()            # pandas CSV load + NumPy statistics
+        │
+        ▼
+preprocess_dataset()   # lowercase, remove punctuation, rating → 0/1
+        │
+        ▼
+vectorize_texts()      # TF-IDF → dense NumPy matrix
+normalize_features()   # L2 normalization with np.linalg.norm
+        │
+        ▼
+to_tensors()           # NumPy → PyTorch tensors
+create_dataloader()    # TensorDataset + DataLoader
+        │
+        ▼
+SentimentMLP           # nn.Module: Linear → ReLU → Dropout → Linear
+run_training()         # BCEWithLogitsLoss + Adam, train + val loop
+        │
+        ▼
 predict: 0 (NEGATIVE) | 1 (POSITIVE)
 ```
 
 ## Current Model
 
-| Component     | Choice                          |
-|---------------|---------------------------------|
-| Features      | To be defined                   |
-| Classifier    | To be defined                   |
-| Evaluation    | Accuracy, F1, Precision, Recall |
+| Component  | Choice                              |
+|------------|-------------------------------------|
+| Features   | TF-IDF (max_features=2000, NumPy)   |
+| Classifier | MLP PyTorch (hidden_dim=256)        |
+| Loss       | BCEWithLogitsLoss                   |
+| Optimizer  | Adam (lr=1e-3)                      |
+| Evaluation | Accuracy, F1, Precision, Recall     |
 
-Deep learning models with PyTorch will be introduced in future deliveries.
+Experimental results (baseline configuration):
+
+| Metric    | Score  |
+|-----------|--------|
+| Accuracy  | 0.9384 |
+| F1-score  | 0.9682 |
+| Precision | 0.9384 |
+| Recall    | 1.0000 |
+
+## Testing
+
+```bash
+python -m unittest discover tests -v
+```
+
+Expected output:
+
+```
+test_load_data_raises_file_not_found (tests.test_data.TestLoadData) ... ok
+test_load_data_returns_dataframe (tests.test_data.TestLoadData) ... ok
+test_passes_with_required_columns (tests.test_data.TestValidateColumns) ... ok
+test_raises_on_missing_column (tests.test_data.TestValidateColumns) ... ok
+test_forward_output_shape (tests.test_model.TestSentimentMLP) ... ok
+test_predict_length_matches_input (tests.test_model.TestSentimentMLP) ... ok
+test_predict_output_is_binary (tests.test_model.TestSentimentMLP) ... ok
+test_predict_returns_ndarray (tests.test_model.TestSentimentMLP) ... ok
+test_save_and_load (tests.test_model.TestSaveLoadModel) ... ok
+test_converts_to_lowercase (tests.test_preprocessing.TestCleanText) ... ok
+test_removes_extra_spaces (tests.test_preprocessing.TestCleanText) ... ok
+test_removes_punctuation (tests.test_preprocessing.TestCleanText) ... ok
+test_negative_rating (tests.test_preprocessing.TestNormalizeLabel) ... ok
+test_neutral_rating (tests.test_preprocessing.TestNormalizeLabel) ... ok
+test_positive_rating (tests.test_preprocessing.TestNormalizeLabel) ... ok
+test_output_shape (tests.test_preprocessing.TestNormalizeFeatures) ... ok
+test_unit_norms (tests.test_preprocessing.TestNormalizeFeatures) ... ok
+test_shapes_preserved (tests.test_training.TestToTensors) ... ok
+test_returns_float32_tensors (tests.test_training.TestToTensors) ... ok
+test_batch_size (tests.test_training.TestCreateDataLoader) ... ok
+test_dataset_length (tests.test_training.TestCreateDataLoader) ... ok
+test_loss_is_positive (tests.test_training.TestTrainEpoch) ... ok
+test_returns_float (tests.test_training.TestTrainEpoch) ... ok
+test_loss_is_positive (tests.test_training.TestValidateEpoch) ... ok
+test_returns_float (tests.test_training.TestValidateEpoch) ... ok
+test_returns_sentiment_mlp (tests.test_training.TestRunTraining) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in Xs
+
+OK
+```
