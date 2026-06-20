@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
-from src.data.loader import load_data
+from src.data.loader import inspect_data, load_data
 from src.evaluation.metrics import evaluate_model, print_report
 from src.models.model import build_model, predict, save_model
 from src.preprocessing.transform import (
@@ -45,6 +45,7 @@ def main() -> None:
     """Run the full sentiment analysis pipeline."""
     # 1. Load and preprocess
     df = load_data(DATA_PATH)
+    inspect_data(df)
     df = preprocess_dataset(df)
     df.to_csv(PROCESSED_PATH, index=False)
 

@@ -1,5 +1,6 @@
 """Data loading and validation for the product reviews dataset."""
 
+import numpy as np
 import pandas as pd
 
 from src.utils.config import RATING_COLUMN, TEXT_COLUMN
@@ -39,3 +40,20 @@ def validate_columns(df: pd.DataFrame, required: list[str]) -> None:
     missing = [col for col in required if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
+
+
+def inspect_data(df: pd.DataFrame) -> None:
+    """Print a NumPy-based summary of the dataset dimensions and rating distribution.
+
+    Args:
+        df: Loaded DataFrame.
+    """
+    ratings: np.ndarray = df[RATING_COLUMN].dropna().to_numpy()
+    print(f"Total samples  : {df.shape[0]}")
+    print(f"Total columns  : {df.shape[1]}")
+    print(f"Rating min/max : {np.min(ratings):.0f} / {np.max(ratings):.0f}")
+    print(f"Rating mean    : {np.mean(ratings):.2f}")
+    print(f"Rating std     : {np.std(ratings):.2f}")
+    unique, counts = np.unique(ratings.astype(int), return_counts=True)
+    for rating, count in zip(unique, counts):
+        print(f"  Rating {rating}: {count} reviews")
