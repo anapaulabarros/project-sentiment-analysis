@@ -36,6 +36,7 @@ Or download manually from the Kaggle website and place the CSV at `data/raw/revi
 project-sentiment-analysis/
 ├── main.py                        # Central pipeline entry point
 ├── requirements.txt
+├── LICENSE
 ├── data/
 │   ├── raw/                       # Original dataset (not versioned)
 │   └── processed/                 # Preprocessed data (generated)
@@ -94,6 +95,13 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## Notebooks
+
+| Notebook | Description |
+|----------|-------------|
+| `notebooks/sentiment_analysis.ipynb` | Full pipeline walkthrough organized by delivery stage (Entregas 1–8 + Final) |
+| `notebooks/experiments.ipynb` | Hyperparameter comparison across 4 configurations (hidden_dim, learning rate, epochs) with results table and bar chart |
+
 ## NLP Pipeline
 
 ```
@@ -131,7 +139,15 @@ predict: 0 (NEGATIVE) | 1 (POSITIVE)
 | Optimizer  | Adam (lr=1e-3)                      |
 | Evaluation | Accuracy, F1, Precision, Recall     |
 
-Experimental results (baseline configuration):
+## Documentation (`docs/`)
+
+| File | Content |
+|------|---------|
+| `docs/vision.md` | System vision: problem, target audience, justification, scope, limitations, and potential impacts |
+| `docs/requirements.md` | Functional requirements (RF01–RF08), non-functional requirements (RNF01–RNF08), constraints, and acceptance criteria |
+| `docs/architecture.md` | Layer diagram, module responsibilities, data flow, and design decisions |
+
+## Experimental Results
 
 | Metric    | Score  |
 |-----------|--------|
@@ -139,6 +155,21 @@ Experimental results (baseline configuration):
 | F1-score  | 0.9682 |
 | Precision | 0.9384 |
 | Recall    | 1.0000 |
+
+## Git Workflow
+
+Development follows a feature-branch strategy:
+
+```
+main                  ← stable, protected
+└── feature/clayton   ← active development branch
+```
+
+Each delivery stage was implemented incrementally with descriptive commit messages. To view the full history:
+
+```bash
+git log --oneline --graph feature/clayton
+```
 
 ## Testing
 
