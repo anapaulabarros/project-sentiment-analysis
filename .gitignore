@@ -39,7 +39,7 @@ results/metrics/*.json
 results/figures/*.png
 results/figures/*.pdf
 
-# Kiro
+# Local config
 .kiro/
 
 # IDEs
