@@ -31,13 +31,15 @@ def split_dataset(
     """
     if len(data) < 2:
         raise ValueError("Dataset must have at least 2 rows")
+    if not (0 < test_size < 1):
+        raise ValueError("test_size must be between 0 and 1 (exclusive)")
 
     rng = np.random.default_rng(RANDOM_SEED)
     n = len(data)
     indices = np.arange(n)
     rng.shuffle(indices)
 
-    n_test = int(n * test_size)
+    n_test = max(1, min(int(np.ceil(n * test_size)), n - 1))
     test_indices = indices[:n_test]
     train_indices = indices[n_test:]
 
