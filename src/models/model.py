@@ -1,52 +1,34 @@
 """Sentiment classification model definition."""
 
-from typing import Sequence
-
 import numpy as np
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 
 from src.utils.config import RANDOM_SEED
 
 
-def build_model() -> Pipeline:
-    """Instantiate the sentiment classification model.
-
-    Returns:
-        Initialized (unfitted) sklearn Pipeline with TfidfVectorizer and LogisticRegression.
-    """
-    return Pipeline([
-        ("tfidf", TfidfVectorizer(max_features=10000, ngram_range=(1, 2))),
-        ("clf", LogisticRegression(max_iter=1000, random_state=RANDOM_SEED)),
-    ])
-
-
-def train_model(x_train: pd.Series, y_train: pd.Series) -> Pipeline:
-    """Train the classification model on the provided data.
+def train_model(X_train: np.ndarray, y_train: np.ndarray) -> LogisticRegression:
+    """Train a LogisticRegression classifier on count matrix data.
 
     Args:
-        x_train: Training features (text strings).
-        y_train: Training labels (0 for negative, 1 for positive).
+        X_train: Training feature matrix (word counts).
+        y_train: Training labels (0 or 1).
 
     Returns:
-        Trained classification model (fitted Pipeline).
+        Fitted LogisticRegression model.
     """
-    model = build_model()
-    model.fit(x_train, y_train)
+    model = LogisticRegression(max_iter=1000, random_state=RANDOM_SEED)
+    model.fit(X_train, y_train)
     return model
 
 
-def predict(model: Pipeline, x: pd.Series) -> np.ndarray:
-    """Generate sentiment predictions using the trained model.
+def predict(model: LogisticRegression, X: np.ndarray) -> np.ndarray:
+    """Generate predictions using the trained model.
 
     Args:
-        model: Trained classification model.
-        x: Input features (text strings).
+        model: Fitted LogisticRegression model.
+        X: Feature matrix (word counts).
 
     Returns:
         Array of predicted labels (0 or 1).
     """
-    predictions = model.predict(x)
-    return np.asarray(predictions, dtype=int)
+    return np.asarray(model.predict(X), dtype=int)

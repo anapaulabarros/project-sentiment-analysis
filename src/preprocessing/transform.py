@@ -2,6 +2,7 @@
 
 import re
 
+import numpy as np
 import pandas as pd
 
 from src.utils.config import (
@@ -86,3 +87,40 @@ def preprocess_dataset(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df[TEXT_COLUMN].str.len() > 0]
 
     return df.reset_index(drop=True)
+
+
+def build_vocabulary(texts: pd.Series) -> dict[str, int]:
+    """Build a word-to-index mapping from training texts.
+
+    Args:
+        texts: Series of cleaned text strings.
+
+    Returns:
+        Dictionary mapping each unique word to a contiguous integer index.
+    """
+    vocab: dict[str, int] = {}
+    idx = 0
+    for text in texts:
+        for word in text.split():
+            if word not in vocab:
+                vocab[word] = idx
+                idx += 1
+    return vocab
+
+
+def texts_to_matrix(texts: pd.Series, vocab: dict[str, int]) -> np.ndarray:
+    """Convert texts to a word-count matrix using NumPy.
+
+    Args:
+        texts: Series of cleaned text strings.
+        vocab: Vocabulary dictionary from build_vocabulary.
+
+    Returns:
+        NumPy array of shape (len(texts), len(vocab)) with word counts.
+    """
+    matrix = np.zeros((len(texts), len(vocab)), dtype=np.float64)
+    for i, text in enumerate(texts):
+        for word in text.split():
+            if word in vocab:
+                matrix[i, vocab[word]] += 1
+    return matrix

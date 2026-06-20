@@ -413,6 +413,8 @@ print(f"Prediction: {'positive' if pred[0] == 1 else 'negative'}")
 
 ## Correctness Properties
 
+*A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+
 ### Property 1: Text cleaning idempotency
 
 *For any* string, `clean_text(clean_text(text)) == clean_text(text)`.
@@ -423,61 +425,73 @@ print(f"Prediction: {'positive' if pred[0] == 1 else 'negative'}")
 
 *For any* string, `clean_text(text)` contains only lowercase alphanumeric characters and single spaces, with no leading/trailing whitespace.
 
-**Validates: Requirements 2.1, 2.2, 2.3**
+**Validates: Requirements 2.1, 2.2, 2.3, 2.4**
 
-### Property 3: Label determinism
+### Property 3: Label determinism and correctness
 
-*For any* rating in {1,2,3,4,5}, `normalize_label(rating)` always returns the same value in {0, 1, None}.
+*For any* rating in {1,2,3,4,5}, `normalize_label(rating)` returns 1 if rating ≥ 4, 0 if rating ≤ 2, and None if rating == 3, and the result is always the same for the same input.
 
 **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
 
 ### Property 4: Preprocessing row reduction
 
-*For any* valid DataFrame, `len(preprocess_dataset(df)) <= len(df)`.
+*For any* valid DataFrame with `reviews.text` and `reviews.rating` columns, `len(preprocess_dataset(df)) <= len(df)`.
 
 **Validates: Requirements 4.6**
 
-### Property 5: Vocabulary completeness
+### Property 5: Preprocessing output invariants
 
-*For any* texts Series, `build_vocabulary(texts)` assigns a unique index to every distinct word appearing in texts, and all indices are contiguous from 0.
+*For any* valid DataFrame, after `preprocess_dataset` all remaining rows have non-empty cleaned text and sentiment values in {0, 1} only.
+
+**Validates: Requirements 4.3, 4.4, 4.5**
+
+### Property 6: Vocabulary completeness and contiguity
+
+*For any* Series of cleaned texts, `build_vocabulary(texts)` assigns a unique index to every distinct word appearing in texts, and all indices form a contiguous range [0, vocabulary_size).
 
 **Validates: Requirements 5.1, 5.2**
 
-### Property 6: Matrix shape correctness
+### Property 7: Matrix shape correctness
 
-*For any* texts and vocab, `texts_to_matrix(texts, vocab).shape == (len(texts), len(vocab))`.
+*For any* texts Series and vocabulary dict, `texts_to_matrix(texts, vocab).shape == (len(texts), len(vocab))`.
 
-**Validates: Requirements 15.1**
+**Validates: Requirements 5.3**
 
-### Property 7: Matrix non-negativity
+### Property 8: Matrix non-negativity
 
-*For any* texts and vocab, all values in `texts_to_matrix(texts, vocab)` are ≥ 0.
-
-**Validates: Requirements 15.1**
-
-### Property 8: Split conservation
-
-*For any* DataFrame with ≥ 2 rows, `len(x_train) + len(x_test) == len(data)`.
-
-**Validates: Requirements 5.4**
-
-### Property 9: Split reproducibility
-
-*For any* DataFrame, calling `split_dataset` twice with same seed produces identical splits.
+*For any* texts Series and vocabulary dict, all values in `texts_to_matrix(texts, vocab)` are ≥ 0.
 
 **Validates: Requirements 5.6**
 
-### Property 10: Prediction output invariant
+### Property 9: Matrix count accuracy
 
-*For any* fitted model and valid X, `predict(model, X)` returns array of shape `(len(X),)` with all values in {0, 1}.
+*For any* text and vocabulary, the matrix cell for word w in text i equals the number of occurrences of w in text i, and words not in the vocabulary contribute zero to all cells.
+
+**Validates: Requirements 5.4, 5.5**
+
+### Property 10: Split conservation
+
+*For any* DataFrame with ≥ 2 rows, `len(x_train) + len(x_test) == len(data)`.
+
+**Validates: Requirements 6.1**
+
+### Property 11: Split reproducibility
+
+*For any* DataFrame, calling `split_dataset` twice with the same seed produces identical splits.
+
+**Validates: Requirements 6.3, 6.4**
+
+### Property 12: Prediction output invariant
+
+*For any* fitted model and valid input texts, `predict(model, X)` returns a NumPy array of length `len(X)` with all values in {0, 1}.
 
 **Validates: Requirements 8.1, 8.2, 8.3**
 
-### Property 11: Metrics range
+### Property 13: Metrics output validity
 
-*For any* binary arrays y_true, y_pred, all values in `evaluate_model(y_true, y_pred)` are in [0.0, 1.0].
+*For any* binary arrays y_true and y_pred of equal length, `evaluate_model(y_true, y_pred)` returns a dictionary with keys {accuracy, f1_score, precision, recall} and all values in [0.0, 1.0].
 
-**Validates: Requirements 9.4, 9.5, 9.6, 9.7, 9.8**
+**Validates: Requirements 9.5, 9.7**
 
 ## Error Handling
 
