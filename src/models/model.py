@@ -1,40 +1,93 @@
-"""Sentiment classification model definition."""
-
-from typing import Sequence
+"""Sentiment classification model — PyTorch MLP."""
 
 import numpy as np
+import torch
+import torch.nn as nn
 
 
-def build_model() -> object:
-    """Instantiate the sentiment classification model.
+class SentimentMLP(nn.Module):
+    """Binary sentiment classifier: one hidden layer MLP."""
 
-    Returns:
-        Initialized classification model.
-    """
-    pass
+    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int) -> None:
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(hidden_dim, output_dim),
+        )
 
-
-def train_model(x_train: Sequence, y_train: Sequence[int]) -> object:
-    """Train the classification model on the provided data.
-
-    Args:
-        x_train: Training features.
-        y_train: Training labels (0 for negative, 1 for positive).
-
-    Returns:
-        Trained classification model.
-    """
-    pass
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        return self.network(x)
 
 
-def predict(model: object, x: Sequence) -> np.ndarray:
-    """Generate sentiment predictions using the trained model.
+def build_model(input_dim: int, hidden_dim: int, output_dim: int) -> SentimentMLP:
+    """Instantiate the sentiment MLP.
 
     Args:
-        model: Trained classification model.
-        x: Input features.
+        input_dim: Number of input features (vocabulary size).
+        hidden_dim: Number of hidden units.
+        output_dim: Number of output units (1 for binary classification).
 
     Returns:
-        Array of predicted labels (0 or 1).
+        Initialized SentimentMLP.
     """
-    pass
+    return SentimentMLP(input_dim, hidden_dim, output_dim)
+
+
+def save_model(model: SentimentMLP, path: str) -> None:
+    """Persist model weights to disk.
+
+    Args:
+        model: Trained SentimentMLP.
+        path: Destination file path (.pt).
+    """
+    torch.save(model.state_dict(), path)
+
+
+def load_model(
+    path: str,
+    input_dim: int,
+    hidden_dim: int,
+    output_dim: int,
+) -> SentimentMLP:
+    """Load model weights from disk.
+
+    Args:
+        path: Path to the saved state dict (.pt).
+        input_dim: Input feature dimension.
+        hidden_dim: Hidden layer dimension.
+        output_dim: Output dimension.
+
+    Returns:
+        SentimentMLP in eval mode.
+    """
+    model = SentimentMLP(input_dim, hidden_dim, output_dim)
+    model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
+    model.eval()
+    return model
+
+
+def predict(
+    model: SentimentMLP,
+    x: torch.Tensor,
+    device: torch.device,
+) -> np.ndarray:
+    """Generate binary predictions from a tensor.
+
+    Args:
+        model: Trained SentimentMLP.
+        x: Input tensor of shape (n_samples, input_dim).
+        device: Target device.
+
+    Returns:
+        NumPy array of binary labels (0 or 1).
+    """
+    model.eval()
+    with torch.no_grad():
+        x = x.to(device)
+        logits = model(x).squeeze(1)
+        probs = torch.sigmoid(logits)
+        labels = (probs >= 0.5).long()
+    return labels.cpu().numpy()

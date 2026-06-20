@@ -13,3 +13,21 @@ MAX_NEGATIVE_RATING: int = 2  # rating <= 2 → negative (0)
 # Train/test split
 TEST_SIZE: float = 0.2
 RANDOM_SEED: int = 42
+
+# Paths
+DATA_PATH: str = "data/raw/reviews.csv"
+PROCESSED_PATH: str = "data/processed/reviews_processed.csv"
+METRICS_PATH: str = "results/metrics/metrics.json"
+FIGURES_PATH: str = "results/figures/confusion_matrix.png"
+
+# PyTorch hyperparameters
+MAX_FEATURES: int = 2000
+HIDDEN_DIM: int = 256
+OUTPUT_DIM: int = 1
+LEARNING_RATE: float = 1e-3
+NUM_EPOCHS: int = 10
+BATCH_SIZE: int = 64
+
+# Model artifacts
+MODEL_PATH: str = "results/models/model.pt"
+VECTORIZER_PATH: str = "results/models/vectorizer.pkl"

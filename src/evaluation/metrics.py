@@ -2,10 +2,13 @@
 
 from typing import Sequence
 
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
 
 def evaluate_model(
-    y_true: Sequence[int],
-    y_pred: Sequence[int],
+    y_true: Sequence[int] | np.ndarray,
+    y_pred: Sequence[int] | np.ndarray,
 ) -> dict[str, float]:
     """Compute evaluation metrics for the classifier.
 
@@ -16,7 +19,12 @@ def evaluate_model(
     Returns:
         Dictionary containing accuracy, f1_score, precision, and recall.
     """
-    pass
+    return {
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "f1_score": float(f1_score(y_true, y_pred)),
+        "precision": float(precision_score(y_true, y_pred)),
+        "recall": float(recall_score(y_true, y_pred)),
+    }
 
 
 def print_report(metrics: dict[str, float]) -> None:
@@ -25,4 +33,5 @@ def print_report(metrics: dict[str, float]) -> None:
     Args:
         metrics: Dictionary returned by evaluate_model.
     """
-    pass
+    for name, value in metrics.items():
+        print(f"{name:<12}: {value:.4f}")
