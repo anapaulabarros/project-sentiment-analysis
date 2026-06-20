@@ -1,5 +1,7 @@
 """Training pipeline: data splitting, tensor conversion, DataLoader creation, and training loop."""
 
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import torch

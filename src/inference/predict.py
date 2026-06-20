@@ -1,5 +1,7 @@
 """Inference utilities: load artifacts and predict sentiment for new texts."""
 
+from __future__ import annotations
+
 import pickle
 
 import numpy as np
